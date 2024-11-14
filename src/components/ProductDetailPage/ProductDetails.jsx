@@ -5,6 +5,7 @@ import { IoIosStar } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import ProductReviewsList from "./ProductReviewsList";
 import ChooseDeliveryModal from "./ChooseDeliveryModal";
+import { FiHeart } from "react-icons/fi";
 
 const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
@@ -27,7 +28,10 @@ const ProductDetails = () => {
             <span className="font-medium text-sm text-[#5C5C5C]">Back</span>
           </Link>
           <div className="w-full flex flex-col lg:flex-row justify-start gap-x-8 gap-y-6">
-            <div className="w-full">
+            <div className="w-full relative">
+              <button type="button" className="absolute z-10 top-4 right-4">
+                <FiHeart className="text-white text-2xl" />
+              </button>
               <img
                 src="/product-img-1.png"
                 alt="product image"
