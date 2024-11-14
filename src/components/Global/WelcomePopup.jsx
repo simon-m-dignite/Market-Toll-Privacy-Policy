@@ -2,9 +2,11 @@ import React, { useState } from "react";
 
 const WelcomePopup = ({ closeModal, onclick }) => {
   const [state, setState] = useState(false);
+  const [changeContent, setChangeContent] = useState(false);
 
   const handleToggleState = () => {
     setState(!state);
+    setChangeContent(true);
   };
 
   return (
@@ -20,16 +22,19 @@ const WelcomePopup = ({ closeModal, onclick }) => {
           </div>
           <div className="flex flex-col items-center justify-center gap-3">
             <img
-              src="/smiling-emoji-icon.png"
+              src={state ? "attention-icon.png" : "/smiling-emoji-icon.png"}
               alt="smiling-emoji-icon"
               className="w-[60px] lg:w-[101px] h-[60px] lg:h-[101px]"
             />
             <h2 className="blue-text font-bold text-[28px]">
-              Welcome to Marketoll!
+              {state
+                ? "Attention Buyers and Sellers!"
+                : "Welcome to Marketoll!"}
             </h2>
             <p className="text-[#5C5C5C] text-base leading-[19.2px] w-[70%] text-center">
-              Elevate your buying and selling experience with us! Connect
-              effortlessly, enjoy convenience.
+              {state
+                ? "To safeguard against fraudulent activities, please be mindful of your personal information stored on our platform."
+                : "  Elevate your buying and selling experience with us! Connect effortlessly, enjoy convenience."}
             </p>
             <button
               type="button"
