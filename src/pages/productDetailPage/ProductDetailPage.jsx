@@ -1,7 +1,7 @@
 import React from "react";
 import ProductDetails from "../../components/ProductDetailPage/ProductDetails";
 
-const PRoductDetailPage = () => {
+const ProductDetailPage = () => {
   return (
     <div className="padding-x py-6">
       <ProductDetails />
@@ -9,4 +9,4 @@ const PRoductDetailPage = () => {
   );
 };
 
-export default PRoductDetailPage;
+export default ProductDetailPage;

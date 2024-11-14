@@ -23,7 +23,7 @@ import ServiceBoostPackagesPage from "../pages/addService/ServiceBoostPackagesPa
 import BoostPostPage from "../pages/boostPost/BoostPostPage";
 import CategoriesPage from "../pages/categories/CategoriesPage";
 import CategoryProductsPage from "../pages/categoryProducts/CategoryProductsPage";
-import PRoductDetailPage from "../pages/productDetailPage/PRoductDetailPage";
+import ProductDetailPage from "../pages/productDetailPage/ProductDetailPage";
 import SellerProfilePage from "../pages/sellerProfile/SellerProfilePage";
 import CartPage from "../pages/cart/CartPage";
 import ChatPage from "../pages/chat/ChatPage";
@@ -139,7 +139,7 @@ const AppRoutes = () => {
 
       <Route
         path="/products/:productId"
-        element={<Layout page={<PRoductDetailPage />} />}
+        element={<Layout page={<ProductDetailPage />} />}
       />
       <Route
         path="/services/:serviceId"
