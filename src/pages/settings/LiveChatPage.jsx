@@ -5,7 +5,7 @@ import { IoSend } from "react-icons/io5";
 
 const LiveChatPage = () => {
   return (
-    <div className="w-full px-5">
+    <div className="w-full px-0 md:px-5">
       <div className="flex items-center gap-2">
         <Link to="/settings/support-request">
           <GoArrowLeft className="text-2xl" />
@@ -15,17 +15,19 @@ const LiveChatPage = () => {
       <div className="w-full border mt-5 mb-4" />
 
       <div className="w-full h-[450px] relative">
-        <p className="text-sm text-[#5c5c5c] text-center font-medium">Today</p>
+        <p className="text-sm text-[#5c5c5c] text-center font-medium mb-2">
+          Today
+        </p>
 
         <div className="w-full flex flex-col items-end">
-          <div className="w-[80%] lg:w-[307px] blue-bg p-3 rounded-xl text-sm text-white">
+          <div className="w-[80%] lg:w-[307px] blue-bg p-3 rounded-xl text-xs lg:text-sm text-white">
             Lorem ipsum dolor sit amet consectetur. Viverra ultrices aliquet
             quisque non justo augue malesuada enim. Vitae nunc duis.
           </div>
           <span className="text-[10px] text-[#5c5c5c]">12:30 PM</span>
         </div>
         <div className="w-full flex flex-col items-start mt-2">
-          <div className="w-[80%] lg:w-[307px] bg-[#F7F7F7] p-3 rounded-xl text-sm text-black">
+          <div className="w-[80%] lg:w-[307px] bg-[#F7F7F7] p-3 rounded-xl text-xs lg:text-sm text-black">
             Lorem ipsum dolor sit amet consectetur. Viverra ultrices aliquet
             quisque non justo augue malesuada enim. Vitae nunc duis.
           </div>
@@ -33,7 +35,7 @@ const LiveChatPage = () => {
         </div>
       </div>
 
-      <div className="w-full bg-white h-16 absolute bottom-0 flex items-center justify-between gap-2">
+      <div className="w-full bg-white border-t h-16 absolute bottom-0 flex items-center justify-between gap-2">
         <div className="border rounded-2xl px-3 mr-8 h-[50px] py-1 w-full flex items-center justify-between">
           <img
             src="/emoji-icon.png"

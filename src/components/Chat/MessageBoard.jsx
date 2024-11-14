@@ -21,7 +21,7 @@ const MessageBoard = () => {
       </div>
 
       {/* Messages Box */}
-      {/* <div className="w-full h-[52%] overflow-y-auto">
+      <div className="w-full h-[68vh] overflow-y-auto chat-list">
         <div className="p-4">
           <p>Message 1</p>
           <p>Message 2</p>
@@ -66,7 +66,7 @@ const MessageBoard = () => {
           <p>Message 1</p>
           <p>Message 2</p>
         </div>
-      </div> */}
+      </div>
 
       {/* Input Box */}
       <div className="w-full h-[8%] px-5 flex items-center justify-center border-t">

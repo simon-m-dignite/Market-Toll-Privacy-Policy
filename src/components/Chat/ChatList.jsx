@@ -4,8 +4,8 @@ import { CiSearch } from "react-icons/ci";
 
 const ChatList = () => {
   return (
-    <div className="w-full h-full border overflow-hidden pr-5">
-      <div className="w-full border-b h-[18%] px-5 pt-5">
+    <div className="w-full h-full border-r overflow-hidden pr-5">
+      <div className="w-full border-b h-[15%] px-5 pt-5">
         <h2 className="blue-text font-bold text-[28px]">Chat</h2>
 
         <div className="w-full border my-3" />
