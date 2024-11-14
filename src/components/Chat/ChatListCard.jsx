@@ -12,7 +12,7 @@ const ChatListCard = () => {
           </span>
         </div>
       </div>
-      <div>
+      <div className="w-[20%]">
         <span className="text-xs font-medium">11 May, 2024</span>
       </div>
     </div>
