@@ -115,7 +115,10 @@ const ProductList = () => {
             <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
               Console
             </h3>
-            <Link to="/" className="text-[#6C6C6C] text-[18px] font-medium">
+            <Link
+              to="/categories/consoles"
+              className="text-[#6C6C6C] text-[18px] font-medium"
+            >
               See all
             </Link>
           </div>
@@ -131,7 +134,10 @@ const ProductList = () => {
             <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
               Home Appliances
             </h3>
-            <Link to="/" className="text-[#6C6C6C] text-[18px] font-medium">
+            <Link
+              to="/categories/consoles"
+              className="text-[#6C6C6C] text-[18px] font-medium"
+            >
               See all
             </Link>
           </div>
