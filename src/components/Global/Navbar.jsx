@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoClose, IoSearchOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NotificationsDropdown from "./NotificationsDropdown";
 import { TbMenu2 } from "react-icons/tb";
 
@@ -10,6 +10,12 @@ const Navbar = () => {
   const [openNotifications, setOpenNotifications] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
   const [openSidebarDropdown, setOpenSidebarDropdown] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/login");
+    setShowProfileDropdown(!showProfileDropdown);
+  };
 
   const handleShowProfileDropdown = () => {
     setShowProfileDropdown(!showProfileDropdown);
@@ -115,7 +121,11 @@ const Navbar = () => {
                 <Link to="/settings">Settings</Link>
               </li>
               <li className="text-xs font-medium py-0.5">
-                <button type="button" className="text-red-500">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-red-500"
+                >
                   Log out
                 </button>
               </li>
@@ -275,7 +285,11 @@ const Navbar = () => {
                 )}
               </li>
               <li className="text-[15px] font-medium py-0.5">
-                <button type="button" className="text-red-500">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-red-500"
+                >
                   Log out
                 </button>
               </li>
