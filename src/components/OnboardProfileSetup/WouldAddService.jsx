@@ -11,7 +11,7 @@ const WouldAddService = () => {
     setShowPopup(!showPopup);
   };
   return (
-    <div className="w-full padding-x overflow-hidden">
+    <div className="w-full padding-x py-6 overflow-hidden">
       <div className="w-full flex flex-col items-center justify-center gap-6 bg-[#F7F7F7] px-4 py-12 rounded-[30px]">
         <h2 className="text-[36px] font-bold blue-text">
           Would you like to add Product or services?

@@ -4,8 +4,11 @@ import { useNavigate } from "react-router-dom";
 const SubCategoryCard = () => {
   const navigate = useNavigate();
   const category = "consoles";
+
   const handleNavigate = () => {
-    navigate(`/categories/${category}`);
+    navigate(`/categories/${category}`, {
+      state: { from: `/categories/${category}` },
+    });
   };
   return (
     <div

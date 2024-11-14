@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import ProductCard from "../Global/ProductCard";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ServiceCard from "../Global/ServiceCard";
 
 const ProductList = () => {
   const [showServices, setShowServices] = useState(false);
+  const navigate = useNavigate();
 
   const handleShowServices = (category) => {
     if (category == "services") {
@@ -12,6 +13,10 @@ const ProductList = () => {
     } else {
       setShowServices(false);
     }
+  };
+
+  const handleNavigate = () => {
+    navigate("/categories/consoles", { state: { from: "/" } });
   };
 
   return (
@@ -134,12 +139,14 @@ const ProductList = () => {
             <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
               Home Appliances
             </h3>
-            <Link
-              to="/categories/consoles"
+            <button
+              type="button"
+              onClick={handleNavigate}
+              // to="/categories/consoles"
               className="text-[#6C6C6C] text-[18px] font-medium"
             >
               See all
-            </Link>
+            </button>
           </div>
 
           <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
