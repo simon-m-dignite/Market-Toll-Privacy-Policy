@@ -45,9 +45,18 @@ const ProductDetails = () => {
     handleFetchProduct();
   }, []);
 
-  const displayImage = product?.images?.find(
-    (image) => image.displayImage === true
-  );
+  // const displayImage = product?.images?.find(
+  //   (image) => image.displayImage === true
+  // );
+  const defaultDisplayImage =
+    product?.images?.find((image) => image.displayImage == true) ||
+    product?.images?.[0]; // Fallback to the first image if no `displayImage` is true
+
+  const [displayImage, setDisplayImage] = useState(defaultDisplayImage);
+  console.log(displayImage);
+  const handleThumbnailClick = (image) => {
+    setDisplayImage(image);
+  };
 
   return (
     <div className="w-full relative">
@@ -63,15 +72,20 @@ const ProductDetails = () => {
                 <FiHeart className="text-white text-2xl" />
               </button>
               <img
-                src={displayImage?.url}
+                src={displayImage}
                 alt="product image"
                 className="w-full h-auto lg:h-[376px]"
               />
               <div className="w-full grid grid-cols-4 mt-3 gap-3">
-                <img src="/product-img-1.png" alt="" className="rounded-xl" />
-                <img src="/product-img-1.png" alt="" className="rounded-xl" />
-                <img src="/product-img-1.png" alt="" className="rounded-xl" />
-                <img src="/product-img-1.png" alt="" className="rounded-xl" />
+                {product?.images?.map((image, index) => {
+                  return (
+                    <img
+                      src={image?.url}
+                      alt=""
+                      className="rounded-xl h-[97px] w-full object-cover"
+                    />
+                  );
+                })}
               </div>
 
               <div className="mt-16 hidden lg:block">
