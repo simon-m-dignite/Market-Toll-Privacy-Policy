@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoClose, IoSearchOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import NotificationsDropdown from "./NotificationsDropdown";
 import { TbMenu2 } from "react-icons/tb";
+import Cookies from "js-cookie";
+import { AuthContext } from "../../context/authContext";
 
 const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -11,9 +13,12 @@ const Navbar = () => {
   const [openSidebar, setOpenSidebar] = useState(false);
   const [openSidebarDropdown, setOpenSidebarDropdown] = useState(false);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const handleLogout = () => {
     navigate("/login");
+    Cookies.remove("market-signup");
+    Cookies.remove("user");
     setShowProfileDropdown(!showProfileDropdown);
   };
 
@@ -96,7 +101,9 @@ const Navbar = () => {
             alt="profile-image"
             className="w-[32px] h-[32px]"
           />
-          <span className="text-base font-medium">John Smith</span>
+          <span className="text-base font-medium">
+            {user?.name !== "" || user?.name !== null ? user?.name : ""}
+          </span>
           <IoIosArrowDown />
         </button>
         {showProfileDropdown && (

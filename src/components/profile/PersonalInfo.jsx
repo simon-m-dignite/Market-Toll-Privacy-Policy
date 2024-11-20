@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
 import { IoClose } from "react-icons/io5";
+import { AuthContext } from "../../context/authContext";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const PersonalInfo = () => {
   const [openNameModal, setOpenNameModal] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [username, setUsername] = useState(user?.name || "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber?.value);
+
   const handleToggleNameModal = () => {
     setOpenNameModal(!openNameModal);
   };
@@ -43,8 +52,8 @@ const PersonalInfo = () => {
             </button>
           </div>
           <div className="flex flex-col items-start justify-start mb-3 gap-1">
-            <span className="font-bold text-[20px]">John Smith</span>
-            <span className="text-sm text-[#5C5C5C]">johnsmith@gmail.com</span>
+            <span className="font-bold text-[20px]">{user?.name}</span>
+            <span className="text-sm text-[#5C5C5C]">{user?.email?.value}</span>
           </div>
         </div>
         <div className="w-full lg:w-[715px] bg-[#F7F7F7] rounded-[24px] p-4 md:p-8 mt-5">
@@ -63,6 +72,8 @@ const PersonalInfo = () => {
             </div>
             <input
               type="text"
+              value={username}
+              disabled
               className="bg-white p-3.5 outline-none rounded-[15px] w-full text-sm"
               placeholder="John Smith"
             />
@@ -82,6 +93,8 @@ const PersonalInfo = () => {
             </div>
             <input
               type="text"
+              disabled
+              value={phoneNumber}
               className="bg-white p-3.5 outline-none rounded-[15px] w-full text-sm"
               placeholder="+1 000 000 0000"
             />
@@ -103,6 +116,37 @@ const PersonalInfo = () => {
 export default PersonalInfo;
 
 const UpdateNameModal = ({ openNameModal, onclick }) => {
+  const { user } = useContext(AuthContext);
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdateName = async () => {
+    const savedUser = JSON.parse(Cookies.get("user"));
+
+    setLoading(true);
+    try {
+      const res = await axios.put(
+        `${BASE_URL}/users/name`,
+        { name },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("update name res >>>>>", res?.data);
+      savedUser.name = res?.data?.data;
+      Cookies.set("user", JSON.stringify(savedUser)); // Set expiry as needed
+      // console.log("Updated cookie:", Cookies.get("user"));
+      toast.success("Name updated");
+    } catch (error) {
+      console.log("update name error >>>>", error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     openNameModal && (
       <div className="w-full h-screen fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
@@ -127,15 +171,17 @@ const UpdateNameModal = ({ openNameModal, onclick }) => {
             </label>
             <input
               type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="bg-white p-3.5 outline-none border rounded-[15px] w-full text-sm"
               placeholder="John Smith"
             />
             <button
               className="w-full w-ful py-3 rounded-[15px] blue-bg text-white font-semibold mt-4"
               type="button"
-              onClick={onclick}
+              onClick={handleUpdateName}
             >
-              Update
+              {loading ? "Updating..." : "Update"}
             </button>
           </div>
         </div>
@@ -146,9 +192,42 @@ const UpdateNameModal = ({ openNameModal, onclick }) => {
 
 const UpdatePhoneNumberModal = ({ openPhoneModal, onclick }) => {
   const [otpModal, setOtpModal] = useState(false);
+
   const handleOtpModal = () => {
     setOtpModal(!otpModal);
   };
+  const { user } = useContext(AuthContext);
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdatePhoneNumber = async () => {
+    const savedUser = JSON.parse(Cookies.get("user"));
+
+    setLoading(true);
+    try {
+      const res = await axios.put(
+        `${BASE_URL}/users/name`,
+        { name },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("update phone res >>>>>", res?.data);
+      savedUser.name = res?.data?.data;
+      Cookies.set("user", JSON.stringify(savedUser)); // Set expiry as needed
+      // console.log("Updated cookie:", Cookies.get("user"));
+      toast.success("Phone number updated");
+    } catch (error) {
+      console.log("update phone number error >>>>", error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     openPhoneModal && (
       <div className="w-full h-screen fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">

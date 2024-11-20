@@ -1,62 +1,11 @@
-import React from "react";
-// import { SUBSCRIPTION_PLANS } from "../../constants/subscriptions";
-import ServiceBoostPackageCard from "../AddService/ServiceBoostPackageCard";
+import React, { useContext } from "react";
 import { FaCheck } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
-
-const SUBSCRIPTION_PLANS = [
-  {
-    title: "18",
-    duration: "7 days",
-    features: [
-      "Lorem ipsum dolor sit amet",
-      "Lorem ipsum dolor sit",
-      "Lorem ipsum dolor sit amet.",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ame",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ",
-    ],
-  },
-  {
-    title: "22",
-    duration: "14 days",
-    features: [
-      "Lorem ipsum dolor sit amet",
-      "Lorem ipsum dolor sit",
-      "Lorem ipsum dolor sit amet.",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ame",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ",
-    ],
-  },
-  {
-    title: "30",
-    duration: "Monthly",
-    features: [
-      "Lorem ipsum dolor sit amet",
-      "Lorem ipsum dolor sit",
-      "Lorem ipsum dolor sit amet.",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ame",
-      "Lorem ipsum dolor",
-      "Lorem ipsum dolor sit ",
-    ],
-  },
-];
+import { SUBSCRIPTION_PLANS } from "../../constants/subscriptions";
+import { AuthContext } from "../../context/authContext";
 
 const Subscriptions = () => {
-  const features = [
-    "Lorem ipsum dolor sit amet",
-    "Lorem ipsum dolor sit",
-    "Lorem ipsum dolor sit amet.",
-    "Lorem ipsum dolor",
-    "Lorem ipsum dolor sit ame",
-    "Lorem ipsum dolor",
-    "Lorem ipsum dolor sit ",
-  ];
   return (
     <div className="rounded-2xl p-5 bg-[#F7F7F7]">
       <div className="w-full p-6 bg-white rounded-2xl">
@@ -68,106 +17,18 @@ const Subscriptions = () => {
           Subscriptions
         </h2>
 
-        <div className="w-full mt-8 flex items-center justify-center gap-6">
-          <div
-            className={`border relative rounded-[30px] p-6 lg:p-5 flex flex-col w-full lg:w-[366px] blue-bg`}
-          >
-            <div className="w-full absolute top-3 right-3">
-              <span
-                className={`bg-white light-blue-text px-6 lg:px-10 py-2.5 rounded-full text-center font-medium text-sm float-end`}
-              >
-                Plan 0
-              </span>
-            </div>
-            <h3 className={`mt-7 text-white font-bold`}>
-              <span className={`mx-1 text-[52px]`}>Free Plan</span>
-            </h3>
-            <ul className={`bg-white p-4 rounded-xl`}>
-              {features.map((p, index) => {
-                return (
-                  <li
-                    key={index}
-                    className="flex items-center w-full gap-2 my-3"
-                  >
-                    <div className="w-[17px] h-[17px] blue-bg p-0.5 rounded-full block">
-                      <FaCheck className="text-white w-full h-full" />
-                    </div>
-
-                    <span className="text-sm">{p}</span>
-                  </li>
-                );
-              })}
-
-              <Link
-                to={"/account/subscriptions/upgrade-plan/add-payment-details"}
-                className={`blue-bg text-white font-bold text-center py-3.5 mt-5 rounded-[20px] w-full block`}
-              >
-                Subscribe Now
-              </Link>
-            </ul>
-          </div>
+        <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {SUBSCRIPTION_PLANS.map((p, index) => {
             return (
-              <div
-                className={`border relative rounded-[30px] p-6 lg:p-5 flex flex-col w-full lg:w-[366px] ${
-                  index == 0 && "blue-bg"
-                }`}
-              >
-                <div className="w-full absolute top-3 right-3">
-                  <span
-                    className={`${
-                      index == 0 ? "bg-white" : "blue-bg text-white"
-                    } px-6 lg:px-10 py-2.5 rounded-full text-center font-medium text-sm float-end`}
-                  >
-                    Plan {index + 1}
-                  </span>
-                </div>
-                <h3
-                  className={`mt-7 ${
-                    index == 0 ? "text-white" : "blue-text"
-                  } font-bold`}
-                >
-                  {p?.title !== "Free Plan" && (
-                    <span className="text-[22px] relative -top-5">$</span>
-                  )}
-                  <span
-                    className={`mx-1 ${
-                      p.title === "Free Plan" ? "text-[52px]" : "text-[69px]"
-                    }`}
-                  >
-                    {p.title}
-                  </span>
-                  {p?.title !== "Free Plan" && (
-                    <span className="text-[22px]">/ {p?.duration}</span>
-                  )}
-                </h3>
-                <ul
-                  className={`${index == 0 && "bg-white p-4 rounded-xl"} p-4`}
-                >
-                  {p.features?.map((p, index) => {
-                    return (
-                      <li
-                        key={index}
-                        className="flex items-center w-full gap-2 my-3"
-                      >
-                        <div className="w-[17px] h-[17px] blue-bg p-0.5 rounded-full block">
-                          <FaCheck className="text-white w-full h-full" />
-                        </div>
-
-                        <span className="text-sm">{p}</span>
-                      </li>
-                    );
-                  })}
-                  <Link
-                    to={
-                      "/account/subscriptions/upgrade-plan/add-payment-details"
-                    }
-                    className={`blue-bg text-white font-bold text-center py-3.5 mt-5 rounded-[20px] w-full block`}
-                  >
-                    Subscribe Now
-                  </Link>
-                </ul>
-              </div>
+              <PackageCard
+                key={index}
+                index={index}
+                title={p.title}
+                features={p.features}
+                duration={p.duration}
+                endpoint={p.endpoint}
+                planType={p.planType}
+              />
             );
           })}
         </div>
@@ -177,3 +38,107 @@ const Subscriptions = () => {
 };
 
 export default Subscriptions;
+
+const PackageCard = ({
+  index,
+  title,
+  features,
+  duration,
+  endpoint,
+  planType,
+}) => {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const SubscribeFreePlan = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}${endpoint}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      console.log(`FreePlan Subscription Success:`, response.data);
+      if (response.data.success) {
+        navigate("/profile-setup");
+      }
+    } catch (error) {
+      console.error(
+        `FreePlan Subscription Failed:`,
+        error.response ? error.response.data : error.message
+      );
+      toast.error(error.response.data?.message);
+    }
+  };
+
+  const handleSubscription = () => {
+    if (index === 0) {
+      // Free Plan Logic
+      SubscribeFreePlan();
+    } else {
+      // Navigate to Payment Page for Paid Plans
+      navigate("/subscriptions/add-payment-details", {
+        state: {
+          plan: {
+            title,
+            duration,
+            endpoint,
+            planType,
+            features,
+          },
+        },
+      });
+    }
+  };
+
+  return (
+    <div className="border rounded-[30px] p-6 flex flex-col justify-between gap-1">
+      <div className="w-full flex items-center justify-between">
+        <span className="blue-bg px-6 py-2.5 rounded-full text-center text-white font-medium text-sm float-end">
+          {planType}
+        </span>
+        {user?.subscriptionPlan?.name == planType ? (
+          <span className="bg-red-500 px-6 py-2.5 rounded-full text-center text-white font-medium text-sm float-end">
+            Subscribed
+          </span>
+        ) : null}
+      </div>
+      <h3 className="blue-text font-bold text-[52px]">
+        {index == 0 ? (
+          "Free Plan"
+        ) : (
+          <>
+            <span className="text-[22px] relative -top-5">$</span>
+            <span className="mx-1">{title}</span>
+            <span className="text-[22px]">/ {duration}</span>
+          </>
+        )}
+      </h3>
+      <ul>
+        {features?.map((p, index) => {
+          return (
+            <li key={index} className="flex items-center w-full gap-2 mt-3.5">
+              <div className="w-[17px] h-[17px] blue-bg p-0.5 rounded-full block">
+                <FaCheck className="text-white w-full h-full" />
+              </div>
+
+              <span>{p}</span>
+            </li>
+          );
+        })}
+      </ul>
+
+      <button
+        type="button"
+        onClick={handleSubscription}
+        disabled={user?.subscriptionPlan?.name == planType}
+        className="blue-bg text-white font-bold text-center py-3.5 mt-5 rounded-[20px] disabled:cursor-not-allowed"
+      >
+        Subscribe
+      </button>
+    </div>
+  );
+};

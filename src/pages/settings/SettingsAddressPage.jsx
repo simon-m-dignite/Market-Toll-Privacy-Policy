@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import SettingsAddressDeleteModal from "../../components/Settings/SettingsAddressDeleteModal";
+import { AuthContext } from "../../context/authContext";
+import {
+  CitySelect,
+  CountrySelect,
+  StateSelect,
+  LanguageSelect,
+  RegionSelect,
+  PhonecodeSelect,
+} from "react-country-state-city";
+import "react-country-state-city/dist/react-country-state-city.css";
 
 const SettingsAddressPage = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const handleShowDeleteModal = () => {
     setShowModal(!showModal);
@@ -13,6 +24,7 @@ const SettingsAddressPage = () => {
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
   };
+
   return (
     <div className="w-full px-5">
       <SettingsAddressDeleteModal
@@ -38,18 +50,19 @@ const SettingsAddressPage = () => {
                 htmlFor="homeAddress"
                 className="ms-2 text-sm font-medium text-gray-900"
               >
-                Home Address
+                My Location
               </label>
             </div>
             <Link
-              to="/settings/addresses/edit-addresses"
+              to="/settings/edit-home-adress"
               className="text-sm font-medium"
             >
               Edit
             </Link>
           </div>
           <div className="w-full bg-[#F5F5F5] text-sm px-5 py-3 rounded-2xl">
-            Unit 500, Montford Court, Montford Street, Salford, M50 2QP - 123456
+            {user?.address?.city}, {user?.address?.state},{" "}
+            {user?.address?.country}
           </div>
         </div>
 
@@ -98,7 +111,7 @@ const SettingsAddressPage = () => {
                 htmlFor="pickupAddress2"
                 className="ms-2 text-sm font-medium text-gray-900"
               >
-                Pickup Address
+                Delivery Address
               </label>
             </div>
             <div className="flex items-center justify-end gap-3">

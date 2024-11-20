@@ -10,7 +10,9 @@ const ChatPage = () => {
           <div className="col-span-1 hidden lg:block h-full">
             <ChatList />
           </div>
-          <div className="col-span-3 lg:col-span-2 h-full flex items-start py-20 lg:pt-52 justify-center">
+          <div
+            className={`col-span-3 lg:col-span-2 h-full flex items-start py-20 lg:pt-52 justify-center`}
+          >
             {/* <MessageBoard /> */}
             <div className="text-center space-y-4">
               <img

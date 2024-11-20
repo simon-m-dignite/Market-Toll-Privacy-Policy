@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
 import { GoPlus } from "react-icons/go";
@@ -6,47 +6,109 @@ import { IoClose } from "react-icons/io5";
 import { STATES } from "../../constants/states";
 import { LuMinus } from "react-icons/lu";
 import { HiPlus } from "react-icons/hi";
+import { productCategories } from "../../constants/productCategories";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import { AuthContext } from "../../context/authContext";
+import { toast } from "react-toastify";
+import { ProductDataReview } from "../../context/addProduct";
 
 const AddProductForm = () => {
+  const { user } = useContext(AuthContext);
+  const [productName, setProductName] = useState("");
+  const [productCategory, setProductCategory] = useState("");
+  const [productSubCategory, setProductSubCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
   const [productImages, setProductImages] = useState([]);
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [fulfillmentMethod, setFulfillmentMethod] = useState({
+    selfPickup: false,
+    delivery: false,
+  });
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [coverImageIndex, setCoverImageIndex] = useState(null);
   const navigate = useNavigate();
+  const [openModal, setOpenModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  console.log(coverImageIndex);
+
+  const { setProductData } = useContext(ProductDataReview);
+
+  const selectedCategory = productCategories.find(
+    (category) => category.name === productCategory
+  );
+  const subcategories = selectedCategory ? selectedCategory.subcategories : [];
+
+  const handleFulfillmentMethodChange = (e) => {
+    const { name, checked } = e.target;
+    setFulfillmentMethod((prevState) => ({
+      ...prevState,
+      [name]: checked,
+    }));
+  };
+
+  const handleCategoryChange = (e) => {
+    setProductCategory(e.target.value);
+    setProductSubCategory("");
+  };
+
+  const handleSubCategoryChange = (e) => {
+    setProductSubCategory(e.target.value);
+  };
 
   const handleStateChange = (event) => {
     setSelectedState(event.target.value);
-    setSelectedCity(""); // Reset city when state changes
+    setSelectedCity("");
   };
 
-  // Get cities for the selected state
   const selectedStateData = STATES.find(
     (state) => state.name === selectedState
   );
   const cities = selectedStateData ? selectedStateData.cities : [];
 
-  // Handle adding an image
   const handleImageChange = (e) => {
-    const newImage = e.target.files[0];
-    if (newImage && productImages.length < 5) {
-      setProductImages((prevImages) => [...prevImages, newImage]);
+    const files = Array.from(event.target.files);
+    if (productImages.length + files.length <= 5) {
+      setProductImages((prevImages) => [...prevImages, ...files]);
     } else {
-      alert("You can upload a maximum of 5 images.");
+      alert("You can only upload up to 5 images.");
     }
   };
 
-  // Handle deleting an image
   const handleDeleteImage = (index) => {
     setProductImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    if (coverImageIndex === index) {
+      setCoverImageIndex(null);
+    }
+  };
+  const handleCoverPhotoChange = (index) => {
+    setCoverImageIndex(index);
   };
 
-  const handleSubmit = (e) => {
+  const uploadProduct = async (e) => {
     e.preventDefault();
+    setProductData({
+      productName,
+      description,
+      productCategory,
+      productSubCategory,
+      selectedState,
+      selectedCity,
+      fulfillmentMethod,
+      pickupAddress,
+      price,
+      quantity,
+      productImages,
+      coverImageIndex,
+    });
     navigate("/product-review");
   };
 
   return (
-    <div className="padding-x w-full">
+    <div className="padding-x w-full py-6">
       <div className="w-full bg-[#F7F7F7] rounded-[30px] px-4 lg:px-8 py-12">
         <div className="w-full flex items-center gap-6">
           <Link
@@ -62,7 +124,7 @@ const AddProductForm = () => {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full padding-x mt-6">
+        <form onSubmit={uploadProduct} className="w-full padding-x mt-6">
           <label htmlFor="productImage" className="text-sm font-semibold">
             Upload Photos
           </label>
@@ -74,25 +136,11 @@ const AddProductForm = () => {
                 className="flex flex-col items-center justify-center h-[170px] w-[170px] rounded-[20px] cursor-pointer bg-white hover:bg-gray-100 relative"
               >
                 <div className="flex flex-col items-center justify-center w-full h-full rounded-full">
-                  {productImages.length === 0 ? (
-                    <GoPlus className="w-[48px] h-[48px] text-light-blue" />
+                  <GoPlus className="w-[48px] h-[48px] text-light-blue" />
+                  {/* {productImages.length === 0 ? (
                   ) : (
-                    // Show the 5th image inside the input area
-                    <div className="h-full w-full rounded-[20px] relative">
-                      <button
-                        type="button"
-                        className="w-5 h-5 z-20 rounded-full bg-gray-300 p-1 absolute top-3 right-3"
-                        onClick={() => handleDeleteImage(0)} // Delete first image
-                      >
-                        <IoClose className="w-full h-full" />
-                      </button>
-                      <img
-                        src={URL.createObjectURL(productImages[0])}
-                        alt="product"
-                        className="h-full w-full rounded-[20px] object-cover"
-                      />
-                    </div>
-                  )}
+                    <GoPlus className="w-[48px] h-[48px] text-light-blue" />
+                  )} */}
                 </div>
                 <input
                   onChange={handleImageChange}
@@ -100,60 +148,47 @@ const AddProductForm = () => {
                   type="file"
                   className="hidden"
                   accept="image/*"
+                  multiple
+                  disabled={productImages.length >= 5}
                 />
               </label>
-              <span className="text-sm font-normal mt-1">
+              <span className="text-sm font-normal mt-1 mx-auto">
                 Upload Product Photo
               </span>
             </div>
 
-            {/* Image Preview and Selection (for images after the 5th one) */}
+            {/* Image Preview and Selection */}
             <div className="flex gap-6">
-              {productImages.slice(1, 5).map((image, index) => (
-                <div className="">
-                  <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`product-image-${index + 1}`}
-                      className="h-[170px] w-[170px] rounded-[20px] object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteImage(index + 1)} // Delete corresponding image
-                      className="w-5 h-5 z-20 rounded-full bg-gray-300 p-1 absolute top-2 right-2"
-                    >
-                      <IoClose className="w-full h-full" />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1">
+              {productImages.map((image, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`product-image-${index}`}
+                    className="h-[170px] w-[170px] rounded-[20px] object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(index)}
+                    className="w-5 h-5 z-20 rounded-full bg-gray-300 p-1 absolute top-2 right-2"
+                  >
+                    <IoClose className="w-full h-full" />
+                  </button>
+
+                  {/* Checkbox for selecting cover photo */}
+                  <div className="flex items-center gap-1 mt-1">
                     <input
-                      type="radio"
-                      name=""
-                      id=""
+                      type="checkbox"
+                      checked={coverImageIndex === index}
+                      onChange={() => handleCoverPhotoChange(index)}
                       className="w-[14px] h-[14px]"
                     />
-                    <label htmlFor="" className="text-sm font-medium">
+                    <label className="text-sm font-medium">
                       Select as cover photo
                     </label>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Select Cover Photo Option for Images */}
-            {/* {productImages.length > 0 && (
-              <div className="mt-4">
-                <input
-                  type="radio"
-                  name="makeCoverPhoto"
-                  id="makeCoverPhoto"
-                  className="w-[14px] h-[14px]"
-                />
-                <label htmlFor="makeCoverPhoto" className="text-sm">
-                  Select as cover photo
-                </label>
-              </div>
-            )} */}
           </div>
 
           <div className="w-full border my-6" />
@@ -165,6 +200,8 @@ const AddProductForm = () => {
               </label>
               <input
                 type="text"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
                 placeholder="Xbox Series X 1 TB"
                 className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
               />
@@ -183,14 +220,18 @@ const AddProductForm = () => {
                   name="productCategory"
                   id="productCategory"
                   className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
+                  value={productCategory}
+                  onChange={handleCategoryChange}
                 >
                   <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
+                  {productCategories.map((category) => (
+                    <option key={category.name} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </div>
+
               <div className="w-full">
                 <label
                   htmlFor="productSubCategory"
@@ -202,12 +243,16 @@ const AddProductForm = () => {
                   name="productSubCategory"
                   id="productSubCategory"
                   className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
+                  value={productSubCategory}
+                  onChange={handleSubCategoryChange}
+                  disabled={!productCategory} // Disable if no category is selected
                 >
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
-                  <option value="">Select Category</option>
+                  <option value="">Select Sub Category</option>
+                  {subcategories.map((sub, index) => (
+                    <option key={index} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -219,6 +264,8 @@ const AddProductForm = () => {
               <textarea
                 name="description"
                 id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 rows={6}
                 className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
               ></textarea>
@@ -231,6 +278,8 @@ const AddProductForm = () => {
               <input
                 type="text"
                 placeholder="$199.00"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
                 className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
               />
             </div>
@@ -319,6 +368,8 @@ const AddProductForm = () => {
                   name="selfPickup"
                   id="selfPickup"
                   className="w-[16px] h-[16px]"
+                  checked={fulfillmentMethod.selfPickup}
+                  onChange={handleFulfillmentMethodChange}
                 />
                 <label htmlFor="selfPickup" className="text-sm font-medium">
                   Self Pickup
@@ -330,6 +381,8 @@ const AddProductForm = () => {
                   name="delivery"
                   id="delivery"
                   className="w-[16px] h-[16px]"
+                  checked={fulfillmentMethod.delivery}
+                  onChange={handleFulfillmentMethodChange}
                 />
                 <label htmlFor="delivery" className="text-sm font-medium">
                   Delivery
@@ -344,6 +397,8 @@ const AddProductForm = () => {
               <input
                 type="text"
                 id="pickupAddress"
+                value={pickupAddress}
+                onChange={(e) => setPickupAddress(e.target.value)}
                 name="pickupAddress"
                 placeholder="16 Maple Avenue, Los Angeles, United States"
                 className="w-full py-4 px-5 outline-none text-sm rounded-[20px] bg-white text-[#5C5C5C] placeholder:text-[#5C5C5C]"
@@ -371,14 +426,45 @@ const AddProductForm = () => {
                 type="submit"
                 className="blue-bg text-white font-semibold text-sm py-3 rounded-[20px]"
               >
-                Review
+                {loading ? "Reviewing..." : "Review"}
               </button>
             </div>
           </div>
         </form>
       </div>
+      {/* <Modal openModal={openModal} onclick={handleModal} /> */}
     </div>
   );
 };
 
 export default AddProductForm;
+
+// const Modal = ({ openModal, onclick }) => {
+//   return (
+//     openModal && (
+//       <div className="w-full fixed inset-0 h-screen z-50 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
+//         <div className="w-full lg:w-[400px] p-10 relative bg-white flex flex-col items-start gap-3 rounded-2xl">
+//           <p className="font-semibold text-base">No bank account attached</p>
+//           <p className="text-[#5c5c5c] font-medium text-sm">
+//             Connect your bank account first to add a product.
+//           </p>
+//           <div className="w-full flex items-center justify-end gap-4">
+//             <Link
+//               to="/settings/payment"
+//               className="text-sm font-semibold text-red-500"
+//             >
+//               Yes
+//             </Link>
+//             <button
+//               type="button"
+//               className="text-sm font-semibold"
+//               onClick={onclick}
+//             >
+//               No
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     )
+//   );
+// };

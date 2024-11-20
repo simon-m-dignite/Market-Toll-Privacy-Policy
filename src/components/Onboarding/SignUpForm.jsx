@@ -4,6 +4,10 @@ import { LuEyeOff } from "react-icons/lu";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import SuccessModal from "../Global/SuccessModal";
+import { toast } from "react-toastify";
 import { AuthContext } from "../../context/authContext";
 
 const validate = (values) => {
@@ -21,18 +25,25 @@ const validate = (values) => {
     errors.email = "Invalid email address";
   }
 
-  if (!values.phone) {
-    errors.phone = "Required";
-  } else if (values.phone.length > 10 || values.phone.length < 10) {
-    errors.phone = "Must be 10 digits";
+  if (!values.phoneNumber.value) {
+    errors.phoneNumber = "Required";
+  } else if (values.phoneNumber.value.length !== 10) {
+    errors.phoneNumber = "Must be 10 digits";
   }
 
   if (!values.password) {
     errors.password = "Required";
+  } else if (values.password < 8) {
+    errors.password = "Password must be 8 characters";
+  } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(values.password)) {
+    errors.password =
+      "Password must contain at least one uppercase letter and one lowercase letter";
   }
 
   if (!values.confirmPassword) {
     errors.confirmPassword = "Required";
+  } else if (values.confirmPassword.length < 8) {
+    errors.confirmPassword = "Password must be at least 8 characters";
   } else if (values.confirmPassword !== values.password) {
     errors.confirmPassword = "Passwords do not match";
   }
@@ -43,23 +54,61 @@ const validate = (values) => {
 const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { user, signUpData, setSignUpData } = useContext(AuthContext);
+  const [showModal, setShowModal] = useState(false);
 
   const formik = useFormik({
     initialValues: {
       name: "",
-      phone: "",
+      phoneNumber: {
+        code: "1",
+        value: "",
+      },
       email: "",
       password: "",
       confirmPassword: "",
     },
     validate,
-    onSubmit: (values, { resetForm }) => {
-      alert(JSON.stringify(values, null, 2));
-      setSignUpData(values);
-      navigate("/review-profile");
-      resetForm();
+    onSubmit: async (values, { resetForm }) => {
+      const formattedValues = {
+        name: values.name,
+        email: values.email,
+        phoneNumber: {
+          code: values.phoneNumber.code,
+          value: values.phoneNumber.value,
+        },
+        password: values.password,
+      };
+      setLoading(true);
+      setError("");
+      try {
+        const res = await axios.post(
+          `${BASE_URL}/users/email-password-signup`,
+          formattedValues
+        );
+        console.log("Sign up res >>", res);
+        Cookies.set("market-signup", JSON.stringify(res?.data?.data));
+        if (res.status == 201) {
+          setShowModal(true);
+          alert(JSON.stringify(formattedValues, null, 2));
+          setTimeout(() => {
+            setShowModal(false);
+            navigate("/review-profile");
+            resetForm();
+          }, 1500);
+        }
+      } catch (error) {
+        console.log("sign up err >>", error);
+        setError(
+          error.response?.data?.message ||
+            "An error occurred. Please try again."
+        );
+        toast.error(error.response.data.message);
+      } finally {
+        setLoading(false);
+      }
     },
   });
   return (
@@ -133,7 +182,7 @@ const SignUpForm = () => {
         </div>
 
         <div className="w-full flex flex-col items-start gap-1">
-          <label htmlFor="phone" className="text-[14px] font-medium">
+          <label htmlFor="phoneNumber" className="text-[14px] font-medium">
             Phone Number
           </label>
           <div className="bg-[#fff] rounded-[20px] w-full flex items-center justify-start gap-3 p-4">
@@ -143,18 +192,20 @@ const SignUpForm = () => {
               className="w-[17.95px] h-[15.34px]"
             />
             <input
-              id="phone"
-              name="phone"
+              id="phoneNumber"
+              name="phoneNumber.value"
               type="text"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.phone}
+              value={formik.values.phoneNumber.value}
               placeholder="+1 123 456 7890"
               className="w-full bg-transparent text-[14px] font-[400] text-[#5C5C5C] outline-none"
             />
           </div>
-          {formik.errors.phone ? (
-            <div className="text-xs text-red-500">{formik.errors.phone}</div>
+          {formik.errors.phoneNumber ? (
+            <div className="text-xs text-red-500">
+              {formik.errors.phoneNumber}
+            </div>
           ) : null}
         </div>
 
@@ -238,7 +289,7 @@ const SignUpForm = () => {
           type="submit"
           className="blue-bg text-white rounded-[20px] text-base font-bold py-3.5 w-full mt-4"
         >
-          Sign Up
+          {loading ? "Submitting..." : "Sign Up"}
         </button>
 
         <p className="text-sm text-center w-full">
@@ -262,6 +313,7 @@ const SignUpForm = () => {
           </Link>
         </p>
       </form>
+      <SuccessModal showModal={showModal} />
     </div>
   );
 };

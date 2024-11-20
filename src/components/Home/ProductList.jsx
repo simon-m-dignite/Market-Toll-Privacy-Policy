@@ -1,11 +1,54 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ProductCard from "../Global/ProductCard";
 import { Link, useNavigate } from "react-router-dom";
 import ServiceCard from "../Global/ServiceCard";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import { AuthContext } from "../../context/authContext";
 
 const ProductList = () => {
   const [showServices, setShowServices] = useState(false);
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
+  const { user } = useContext(AuthContext);
+  const [page, setPage] = useState(1);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/users/products?page=1`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+      console.log("home screen products >>", res?.data);
+      setProducts(res?.data?.data);
+    } catch (error) {
+      console.log("home screen products err >>>>", error);
+    }
+  };
+
+  const fetchServices = async () => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/users/home-screen-services?page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      console.log("services >>>>>", res?.data?.data);
+      setServices(res?.data?.data);
+    } catch (error) {
+      console.log("services error >>>>", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchServices();
+  }, []);
 
   const handleShowServices = (category) => {
     if (category == "services") {
@@ -100,18 +143,13 @@ const ProductList = () => {
           </div>
 
           <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
-            <ServiceCard />
+            {services && services?.length > 0 ? (
+              <>
+                {services?.map((service, index) => {
+                  return <ServiceCard service={service} key={index} />;
+                })}
+              </>
+            ) : null}
           </div>
         </>
       ) : (
@@ -129,31 +167,15 @@ const ProductList = () => {
           </div>
 
           <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
-          </div>
-
-          <div className="w-full flex items-center justify-between mt-10">
-            <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
-              Home Appliances
-            </h3>
-            <button
-              type="button"
-              onClick={handleNavigate}
-              // to="/categories/consoles"
-              className="text-[#6C6C6C] text-[18px] font-medium"
-            >
-              See all
-            </button>
-          </div>
-
-          <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
+            {products && products.length > 0 ? (
+              <>
+                {products.map((product, index) => {
+                  return <ProductCard product={product} key={index} />;
+                })}
+              </>
+            ) : (
+              <></>
+            )}
           </div>
         </>
       )}

@@ -1,13 +1,64 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdEmail } from "react-icons/md";
+import Cookies from "js-cookie";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import { AuthContext } from "../../context/authContext";
 
 const ReviewProfileForm = () => {
   const navigate = useNavigate();
+  const data = JSON.parse(Cookies.get("market-signup")) || null;
+  // console.log("Cookies data >>>>>", data);
+  const { verificationStatus } = useContext(AuthContext);
+  console.log("verificationStatus >>", verificationStatus);
 
-  const handleNavigate = () => {
-    // navigate("/verify-otp");
-    navigate("/verify-otp", { state: { from: "review-profile" } });
+  const handleVerifyEmail = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/users/verify-email-send-email-otp`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+          },
+        }
+      );
+      console.log("verify email otp res >> ", res);
+      if (res.status == 200) {
+        navigate("/verify-otp", {
+          state: { from: "review-profile", type: "email" },
+        });
+      } else {
+        alert("Something went wrong.");
+      }
+    } catch (error) {
+      console.log("verify email otp err  >> ", error);
+    }
+  };
+
+  const handleVerifyPhoneNumber = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/users/verify-phone-number-send-sms-otp`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${data?.token}`,
+          },
+        }
+      );
+      console.log("verify phone otp res >> ", res);
+      if (res.status == 200) {
+        navigate("/verify-otp", {
+          state: { from: "review-profile", type: "phone" },
+        });
+      } else {
+        alert("Something went wrong.");
+      }
+    } catch (error) {
+      console.log("verify phone otp err  >> ", error);
+    }
   };
 
   return (
@@ -28,39 +79,83 @@ const ReviewProfileForm = () => {
 
         <button
           type="button"
-          onClick={handleNavigate}
-          className="w-full flex items-center gap-5 my-5 bg-white rounded-[20px] p-4"
+          onClick={handleVerifyEmail}
+          className={`w-full flex items-center gap-5 my-5 ${
+            verificationStatus.email ? "blue-bg" : "bg-white"
+          } rounded-[20px] p-4`}
         >
-          <div className="rounded-[20px] blue-bg flex items-center justify-center w-[80px] h-[80px]">
-            <MdEmail className="text-white w-[37px] h-[37px]" />
+          <div
+            className={`rounded-[20px] ${
+              verificationStatus.email ? "bg-white" : "blue-bg"
+            } flex items-center justify-center w-[80px] h-[80px]`}
+          >
+            <MdEmail
+              className={`${
+                verificationStatus?.email ? "light-blue-text" : "text-white"
+              } w-[37px] h-[37px]`}
+            />
           </div>
           <div className="flex flex-col justify-center items-start gap-1">
-            <h3 className="text-[18px] font-bold">John Smith</h3>
-            <p className="text-sm text-[#5C5C5C]">johnsmith@gmail.com</p>
+            <h3
+              className={`text-[18px] font-bold ${
+                verificationStatus?.email ? "text-white" : "text-black"
+              }`}
+            >
+              {data?.name}
+            </h3>
+            <p
+              className={`text-sm ${
+                verificationStatus?.email ? "text-white" : "text-[#5C5C5C]"
+              }`}
+            >
+              {data?.email?.value}
+            </p>
           </div>
         </button>
 
         <button
           type="button"
-          onClick={handleNavigate}
-          className="w-full flex items-center gap-5 mb-7 bg-white rounded-[20px] p-4"
+          onClick={handleVerifyPhoneNumber}
+          className={`w-full flex items-center gap-5 mb-5 ${
+            verificationStatus.phone ? "blue-bg" : "bg-white"
+          } rounded-[20px] p-4`}
         >
-          <div className="rounded-[20px] blue-bg flex items-center justify-center w-[80px] h-[80px]">
+          <div
+            className={`rounded-[20px] ${
+              verificationStatus.phone ? "bg-white" : "blue-bg"
+            } flex items-center justify-center w-[80px] h-[80px]`}
+          >
             <img
-              src="/verify-phone-icon.png"
+              src={
+                verificationStatus.phone
+                  ? "/verify-phone-icon-blue.png"
+                  : "/verify-phone-icon.png"
+              }
+              // src="/verify-phone-icon.png"
               alt="verify-phone-icon"
               className="w-[38px] h-[40px]"
             />
           </div>
           <div className="flex flex-col justify-center items-start gap-1">
-            <h3 className="text-[18px] font-bold">Phone Number</h3>
-            <p className="text-sm text-[#5C5C5C]">+1 123 456 7980</p>
+            <h3
+              className={`text-[18px] font-bold ${
+                verificationStatus?.phone ? "text-white" : "text-black"
+              }`}
+            >
+              Phone Number
+            </h3>
+            <p
+              className={`text-sm ${
+                verificationStatus?.phone ? "text-white" : "text-[#5C5C5C]"
+              }`}
+            >{`${data?.phoneNumber?.code}${data?.phoneNumber?.value}`}</p>
           </div>
         </button>
 
         <button
           type="submit"
-          onClick={() => navigate("/subscriptions")}
+          onClick={() => navigate("/identity-verified")}
+          disabled={!verificationStatus.email && !verificationStatus.phone}
           className="blue-bg text-white rounded-[20px] text-base font-bold py-3.5 w-full mb-7"
         >
           Next

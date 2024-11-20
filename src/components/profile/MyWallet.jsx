@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import WithdrawFundModal from "./WithdrawFundModal";
 import AddFundModal from "./AddFundModal";
+import { AuthContext } from "../../context/authContext";
 
 const MyWallet = () => {
   const [connectCard, setConnectCard] = useState(true);
   const [cardAdded, setCardAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFundModal, setShowFundModal] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const handleTogglwWithdrawModal = () => {
     setShowModal(!showModal);
@@ -53,7 +55,7 @@ const MyWallet = () => {
                     $
                   </span>
                   <span className="blue-text text-xl md:text-[45px] font-bold">
-                    2,450.00
+                    {user?.walletBalance}
                   </span>
                   <span className="text-sm md:text-xl text-[#959595]">USD</span>
                 </div>
@@ -130,28 +132,33 @@ const MyWallet = () => {
                       className="w-[24.79px] h-[15.33px]"
                     />
                     <span className="text-sm text-[#5C5C5C]">
-                      **** **** **** 8941
+                      **** **** ****{" "}
+                      {user?.stripeConnectedAccount?.external_account?.last4}
                     </span>
                   </div>
                   <MdOutlineKeyboardArrowRight className="text-xl light-blue-text" />
                 </button>
-                <button
-                  type="button"
-                  onClick={handleConnectCard}
-                  className="flex items-center justify-between w-full custom-shadow py-4 px-4 rounded-xl"
-                >
-                  <div className="flex items-center gap-2">
-                    <img
-                      src="/credit-card-icon.png"
-                      alt="credit card icon"
-                      className="w-[20px] h-[20px]"
-                    />
-                    <span className="text-sm text-[#5C5C5C]">
-                      Add Debit/ Credit Card
-                    </span>
-                  </div>
-                  <MdOutlineKeyboardArrowRight className="text-xl light-blue-text" />
-                </button>
+                {user?.stripeConnectedAccount?.external_account?.id !== "" ||
+                  (user?.stripeConnectedAccount?.external_account?.id !==
+                    null && (
+                    <button
+                      type="button"
+                      onClick={handleConnectCard}
+                      className="flex items-center justify-between w-full custom-shadow py-4 px-4 rounded-xl"
+                    >
+                      <div className="flex items-center gap-2">
+                        <img
+                          src="/credit-card-icon.png"
+                          alt="credit card icon"
+                          className="w-[20px] h-[20px]"
+                        />
+                        <span className="text-sm text-[#5C5C5C]">
+                          Add Debit/ Credit Card
+                        </span>
+                      </div>
+                      <MdOutlineKeyboardArrowRight className="text-xl light-blue-text" />
+                    </button>
+                  ))}
               </div>
             ) : (
               <form

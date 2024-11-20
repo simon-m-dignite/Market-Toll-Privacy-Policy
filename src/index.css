@@ -72,3 +72,18 @@ input[type="number"]::-ms-clear {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+#cardDetails {
+  background-color: white !important;
+  @apply p-4 text-sm rounded-3xl text-[#5c5c5c];
+}
+
+.stsearch-box > input {
+  border: none;
+  outline: none;
+}
+
+.stdropdown-container {
+  border-radius: 15px !important;
+  border: 1px solid #dedede;
+}

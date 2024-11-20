@@ -1,33 +1,153 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { FaCheck } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { GoArrowLeft } from "react-icons/go";
 import { IoClose } from "react-icons/io5";
-
-const packageInfo = {
-  title: "2.99",
-  duration: "7 days",
-  features: [
-    "Lorem ipsum dolor sit amet consectetur.",
-    "Lorem ipsum dolor sit amet consectetur.",
-    "Lorem ipsum dolor sit amet consectetur.",
-    "Lorem ipsum dolor sit amet consectetur.",
-    "Lorem ipsum dolor sit amet consectetur.",
-  ],
-};
+import { AuthContext } from "../../context/authContext";
+import { BASE_URL } from "../../api/api";
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 
 const AddPaymentPage = () => {
   const [addCard, setAddCard] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleBuyPlan = () => {
-    setShowSuccessModal(true);
-    setShowInfoModal(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  console.log(user);
+  const { plan } = location.state;
+
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const handleSaveCard = async () => {
+    if (!stripe || !elements) {
+      console.log("Stripe.js has not loaded yet.");
+      return;
+    }
+
+    // Get the CardElement from the elements context
+    const cardElement = elements.getElement(CardElement);
+
+    if (!cardElement) {
+      console.error("CardElement is not rendered.");
+      return;
+    }
+
+    // Create a payment method with the card details
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: "card",
+      card: cardElement,
+    });
+
+    if (error) {
+      console.error(error);
+      setIsProcessing(false);
+      alert("Error processing payment method: " + error.message);
+      return;
+    }
+
+    console.log("PaymentMethod Created:", paymentMethod.id);
+
+    // Now send the paymentMethod.id to your backend for customer creation and subscription handling
+    try {
+      // Send the paymentMethodId to the backend to handle customer creation and subscription
+      const response = await fetch(
+        `${BASE_URL}/stripe/subscribe-paid-plan-stripe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          body: JSON.stringify({
+            paymentMethodId: paymentMethod.id,
+            subscriptionName: plan?.planType || "", // Include user data if necessary
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setShowSuccessModal(true);
+        setIsProcessing(false);
+      } else {
+        alert("Error processing payment. Please try again.");
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setIsProcessing(false);
+      alert("An error occurred while processing the payment.");
+    }
   };
+
+  // const handleSaveCard = async () => {
+  //   if (!stripe || !elements) {
+  //     console.log("Stripe.js has not loaded yet.");
+  //     return;
+  //   }
+
+  //   // Get the CardElement from the elements context
+  //   const cardElement = elements.getElement(CardElement);
+
+  //   if (!cardElement) {
+  //     console.error("CardElement is not rendered.");
+  //     return;
+  //   }
+
+  //   // Create a payment method with the card details
+  //   const { error, paymentMethod } = await stripe.createPaymentMethod({
+  //     type: "card",
+  //     card: cardElement,
+  //   });
+
+  //   if (error) {
+  //     console.error(error);
+  //     setIsProcessing(false);
+  //     alert("Error processing payment method: " + error.message);
+  //     return;
+  //   }
+
+  //   console.log("PaymentMethod Created:", paymentMethod.id);
+
+  //   // Send paymentMethod.id to your backend for further processing
+  //   try {
+  //     const response = await fetch(
+  //       `${BASE_URL}/stripe/subscribe-paid-plan-stripe`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${user?.token}`,
+  //         },
+  //         body: JSON.stringify({
+  //           paymentMethodId: paymentMethod.id,
+  //           subscriptionName: plan?.planType || "", // Include user data if necessary
+  //         }),
+  //       }
+  //     );
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       setShowSuccessModal(true);
+  //       setIsProcessing(false);
+  //     } else {
+  //       alert("Error processing payment. Please try again.");
+  //       setIsProcessing(false);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error:", err);
+  //     setIsProcessing(false);
+  //     alert("An error occurred while processing the payment.");
+  //   }
+  // };
 
   const handleCloseInfoModal = () => {
     setShowInfoModal(false);
@@ -36,6 +156,7 @@ const AddPaymentPage = () => {
 
   const handleAddCardTrue = () => {
     setAddCard(!addCard);
+    console.log("addCard >>>>>", addCard);
   };
 
   const handleAddCardFalse = () => {
@@ -45,7 +166,7 @@ const AddPaymentPage = () => {
 
   return (
     <div className="padding-x py-6 w-full">
-      <div className="w-full py-12 lg:py-16 rounded-[30px] bg-[#F7F7F7] relative">
+      <div className="w-full py-12 lg:py-16 rounded-[30px] bg-[#F7F7F7] relative px-4">
         {addCard && (
           <button
             type="button"
@@ -84,44 +205,14 @@ const AddPaymentPage = () => {
                 className="w-full bg-white rounded-full px-6 py-4 text-sm text-[#5C5C5C] outline-none"
               />
             </div>
-            <div className="w-full flex flex-col items-start gap-1 lg:w-[635px]">
-              <label htmlFor="cardNumber" className="font-medium text-sm">
-                Card Number
+
+            <div className="w-full lg:w-[635px] mt-4">
+              <label htmlFor="cardDetails" className="font-medium text-sm">
+                Card Details
               </label>
-              <input
-                type="text"
-                id="cardNumber"
-                name="cardNumber"
-                placeholder="0000 0000 0000"
-                className="w-full bg-white rounded-full px-6 py-4 text-sm text-[#5C5C5C] outline-none"
-              />
+              <CardElement className="w-full bg-white rounded-full px-6 py-4 text-sm text-[#5C5C5C] outline-none" />
             </div>
-            <div className="w-full lg:w-[635px] grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="w-full flex flex-col items-start gap-1">
-                <label htmlFor="expiry" className="font-medium text-sm">
-                  Expiry
-                </label>
-                <input
-                  type="text"
-                  id="expiry"
-                  name="expiry"
-                  placeholder="MM/YY"
-                  className="w-full bg-white rounded-full px-6 py-4 text-sm text-[#5C5C5C] outline-none"
-                />
-              </div>
-              <div className="w-full flex flex-col items-start gap-1">
-                <label htmlFor="cvc" className="font-medium text-sm">
-                  CVC
-                </label>
-                <input
-                  type="text"
-                  id="cvc"
-                  name="cvc"
-                  placeholder="0000"
-                  className="w-full bg-white rounded-full px-6 py-4 text-sm text-[#5C5C5C] outline-none"
-                />
-              </div>
-            </div>
+
             <div className="w-full lg:w-[635px] mt-2">
               <button
                 type="button"
@@ -142,18 +233,18 @@ const AddPaymentPage = () => {
                   <span
                     className={`blue-bg text-white px-6 lg:px-10 py-2.5 rounded-full text-center font-medium text-sm float-end`}
                   >
-                    Plan 2
+                    {plan?.planType}
                   </span>
                 </div>
                 <h3 className={`blue-text font-bold text-4xl lg:text-[81px]`}>
                   <span className="text-[22px] relative -top-2.5 lg:-top-10">
                     $
                   </span>
-                  <span className="mx-1">{packageInfo.title}</span>
-                  <span className="text-[22px]">/ {packageInfo.duration}</span>
+                  <span className="mx-1">{plan?.title}</span>
+                  <span className="text-[22px]">/ {plan?.duration}</span>
                 </h3>
                 <ul className={`bg-white px-4 rounded-xl`}>
-                  {packageInfo.features?.map((p, index) => {
+                  {plan?.features?.map((p, index) => {
                     return (
                       <li
                         key={index}
@@ -179,7 +270,9 @@ const AddPaymentPage = () => {
                 <p className="text-base font-normal">Credit/Debit Card</p>
                 <p className="text-base font-normal">
                   Total Amount:{" "}
-                  <span className="blue-text font-bold text-[24px]">$18</span>{" "}
+                  <span className="blue-text font-bold text-[24px]">
+                    ${plan?.title}
+                  </span>{" "}
                   <span className="text-[12px]">/month</span>
                 </p>
               </div>
@@ -216,24 +309,35 @@ const AddPaymentPage = () => {
 
               <button
                 type="button"
-                disabled={!showCard}
-                onClick={() => handleBuyPlan()}
-                className={`py-3.5 text-center w-full rounded-full ${
-                  showCard ? "blue-bg" : "bg-[#B4B5B6]"
-                } text-base font-bold text-white`}
+                // disabled={!showCard || isProcessing}
+                onClick={handleSaveCard}
+                className="py-3 px-10 rounded-full w-full blue-bg text-white font-bold text-base"
               >
-                Pay Now
+                {isProcessing ? "Processing..." : "Continue"}
               </button>
             </div>
           </div>
         )}
-
-        {/* {showSuccessModal && <PlanPurchaseSuccessModal />} */}
-        {showInfoModal && (
-          <PostBoostedSuccessModal onclick={handleCloseInfoModal} />
-        )}
-        {/* <PostBoostedSuccessModal /> */}
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed top-0 left-0 z-50 w-full h-full bg-[#00000040] flex justify-center items-center">
+          <div className="bg-white w-full lg:w-[440px] rounded-lg p-5 flex flex-col items-center justify-center py-12 relative">
+            <button
+              onClick={handleCloseInfoModal}
+              className="w-6 h-6 rounded-full bg-gray-100 absolute top-5 right-5 p-1"
+            >
+              <IoClose className="w-full h-full" />
+            </button>
+            <div className="w-[69.67px] h-[69.67px] blue-bg rounded-full p-5">
+              <FaCheck className="text-white w-full h-full" />
+            </div>
+            <h3 className="text-xl font-bold">Subscription Successful</h3>
+            <p>Your subscription has been successfully activated!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

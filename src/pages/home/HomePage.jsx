@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiPlus } from "react-icons/fi";
 import ProductList from "../../components/Home/ProductList";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
+import { AuthContext } from "../../context/authContext";
 
 const HomePage = () => {
   const [openModal, setOpenModal] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const handleOpenModal = () => {
     setOpenModal(!openModal);
@@ -16,7 +18,10 @@ const HomePage = () => {
     <div className="padding-x py-6 z-0">
       <div className="w-full flex items-center justify-between z-0">
         <h2 className="text-2xl lg:text-[36px] font-bold">
-          <span className="blue-text">Welcome Mike,</span>
+          <span className="blue-text">
+            Welcome {user?.name !== "" || user?.name !== null ? user?.name : ""}
+            ,
+          </span>
           <span>Let’s Shop!</span>
         </h2>
         <button

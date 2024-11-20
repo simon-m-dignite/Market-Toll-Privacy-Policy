@@ -2,6 +2,9 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import Cookies from "js-cookie";
 
 const validate = (values) => {
   const errors = {};
@@ -22,11 +25,22 @@ const ForgotPasswordForm = () => {
       email: "",
     },
     validate,
-    onSubmit: (values, { resetForm }) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values, { resetForm }) => {
+      // alert(JSON.stringify(values, null, 2));
+      try {
+        const res = await axios.post(
+          `${BASE_URL}/users/forgot-password-send-email-otp`,
+          { email: values.email }
+        );
+        console.log("verify email res >>>>>>", res);
+        Cookies.set("user-email", JSON.stringify(values.email));
+        navigate("/verify-otp", {
+          state: { from: "forgot-password", type: "forgot-password" },
+        });
+      } catch (error) {
+        console.log("Verify email err >>>>", error);
+      }
       resetForm();
-      navigate("/verify-otp", { state: { from: "forgot-password" } });
-      // navigate("/verify-otp");
     },
   });
   return (

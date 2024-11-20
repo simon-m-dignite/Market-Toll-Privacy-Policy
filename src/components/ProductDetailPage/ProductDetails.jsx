@@ -1,16 +1,24 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
 import { IoIosStar } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import ProductReviewsList from "./ProductReviewsList";
 import ChooseDeliveryModal from "./ChooseDeliveryModal";
 import { FiHeart } from "react-icons/fi";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import { AuthContext } from "../../context/authContext";
 
 const ProductDetails = () => {
+  const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
   const [addToCart, setAddToCart] = useState(false);
+  const { productId } = useParams();
+  const { user } = useContext(AuthContext);
+
+  console.log(productId);
   const handleShowPopup = () => {
     setShowPopup(!showPopup);
   };
@@ -18,6 +26,28 @@ const ProductDetails = () => {
   const handleAddToCart = () => {
     setAddToCart(!addToCart);
   };
+
+  const handleFetchProduct = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/users/product/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+      console.log("product data >>>", res?.data?.data);
+      setProduct(res?.data?.data);
+    } catch (error) {
+      console.log("product err >>>", error);
+    }
+  };
+
+  useEffect(() => {
+    handleFetchProduct();
+  }, []);
+
+  const displayImage = product?.images?.find(
+    (image) => image.displayImage === true
+  );
 
   return (
     <div className="w-full relative">
@@ -33,7 +63,7 @@ const ProductDetails = () => {
                 <FiHeart className="text-white text-2xl" />
               </button>
               <img
-                src="/product-img-1.png"
+                src={displayImage?.url}
                 alt="product image"
                 className="w-full h-auto lg:h-[376px]"
               />
@@ -52,9 +82,9 @@ const ProductDetails = () => {
             <div className="w-full flex flex-col items-start gap-5">
               <div className="w-full flex flex-col lg:flex-row items-start lg:items-center justify-between">
                 <h2 className="text-[20px] blue-text font-bold">
-                  Microsoft xbox series x 1TB
+                  {product?.name}
                 </h2>
-                <h3 className="text-[24px] font-bold">$199.00</h3>
+                <h3 className="text-[24px] font-bold">${product?.price}.00</h3>
               </div>
 
               <div className="w-full border" />
@@ -62,23 +92,23 @@ const ProductDetails = () => {
               <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8">
                 <div className="grid grid-cols-2 gap-y-3">
                   <p className="text-[13px] text-[#7C7C7C] font-medium">City</p>
-                  <p className="text-[13px] font-medium">Toronto</p>
+                  <p className="text-[13px] font-medium">{product?.city}</p>
                   <p className="text-[13px] text-[#7C7C7C] font-medium">
                     Category
                   </p>
-                  <p className="text-[13px] font-medium">
-                    Electronic & Accessories
-                  </p>
+                  <p className="text-[13px] font-medium">{product?.category}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-y-3">
                   <p className="text-[13px] text-[#7C7C7C] font-medium">
                     State
                   </p>
-                  <p className="text-[13px] font-medium">Canada</p>
+                  <p className="text-[13px] font-medium">{product?.state}</p>
                   <p className="text-[13px] text-[#7C7C7C] font-medium">
                     Sub Category
                   </p>
-                  <p className="text-[13px] font-medium">Gaming</p>
+                  <p className="text-[13px] font-medium">
+                    {product?.subCategory}
+                  </p>
                 </div>
               </div>
 
@@ -89,17 +119,7 @@ const ProductDetails = () => {
                   Description
                 </p>
                 <p className="text-[14px] font-normal">
-                  Xbox Series X is Microsoft's flagship gaming console, offering
-                  unparalleled performance and speed. With its powerful AMD Zen
-                  2 processor and RDNA 2 graphics architecture, it delivers
-                  stunning 4K visuals and supports up to 120 frames per second.
-                  The Series X features a 1TB SSD for rapid load times and
-                  seamless gameplay, while its backward compatibility allows
-                  access to a vast library of Xbox One, Xbox 360, and original
-                  Xbox games. Its sleek, minimalist design and advanced cooling
-                  system ensure optimal performance and quiet operation.
-                  Additionally, the console supports ray tracing, Dolby Vision,
-                  and Dolby Atmos for an immersive gaming experience
+                  {product?.description}
                 </p>
               </div>
 

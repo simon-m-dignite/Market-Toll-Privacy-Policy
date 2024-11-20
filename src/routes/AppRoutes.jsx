@@ -49,6 +49,10 @@ import LiveChatPage from "../pages/settings/LiveChatPage";
 import SettingsDeleteAccountPage from "../pages/settings/SettingsDeleteAccountPage";
 import AddPaymentPage from "../pages/packages/AddPaymentPage";
 import ServiceDetailsPage from "../pages/addService/ServiceDetailsPage";
+import StripeProvider from "../components/Global/StripeProvider";
+import AddPayment from "../pages/packages/AddPayment";
+import IdentityVerifiedPage from "../components/Onboarding/IdentityVerifiedPage";
+import SettingsEditHomeAddress from "../pages/settings/SettingsEditHomeAddress";
 
 const AppRoutes = () => {
   return (
@@ -75,6 +79,10 @@ const AppRoutes = () => {
         path="/review-profile"
         element={<Layout page={<ReviewProfilePage />} />}
       />
+      <Route
+        path="/identity-verified"
+        element={<Layout page={<IdentityVerifiedPage />} />}
+      />
 
       <Route
         path="/subscriptions"
@@ -82,7 +90,7 @@ const AppRoutes = () => {
       />
       <Route
         path="/subscriptions/add-payment-details"
-        element={<Layout page={<AddPaymentPage />} />}
+        element={<Layout page={<AddPayment />} />}
       />
 
       <Route
@@ -208,6 +216,12 @@ const AppRoutes = () => {
         path="/settings/addresses"
         element={
           <Layout page={<SettingsPage page={<SettingsAddressPage />} />} />
+        }
+      />
+      <Route
+        path="/settings/edit-home-adress"
+        element={
+          <Layout page={<SettingsPage page={<SettingsEditHomeAddress />} />} />
         }
       />
       <Route

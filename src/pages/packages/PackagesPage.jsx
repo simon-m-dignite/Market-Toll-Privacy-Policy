@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import PackageCard from "../../components/Packages/PackageCard";
 import { SUBSCRIPTION_PLANS } from "../../constants/subscriptions";
+import { AuthContext } from "../../context/authContext";
 
 const PackagesPage = () => {
+  const { user } = useContext(AuthContext);
+  console.log("user >>>>", user);
   return (
     <div className="padding-x py-6 w-full">
       <div className="text-center">
@@ -23,6 +26,8 @@ const PackagesPage = () => {
               title={p.title}
               features={p.features}
               duration={p.duration}
+              endpoint={p.endpoint}
+              planType={p.planType}
             />
           );
         })}

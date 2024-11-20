@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { LuEye, LuEyeOff } from "react-icons/lu";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const validate = (values) => {
   const errors = {};
@@ -29,10 +33,20 @@ const UpdatePasswordForm = () => {
       confirmPassword: "",
     },
     validate,
-    onSubmit: (values, { resetForm }) => {
+    onSubmit: async (values, { resetForm }) => {
       alert(JSON.stringify(values, null, 2));
-      resetForm();
-      navigate("/password-updated");
+      const userEmail = JSON.parse(Cookies.get("user-email"));
+      try {
+        const res = await axios.put(
+          `${BASE_URL}/users/forgot-password-update-password`,
+          { password: values.password, email: userEmail }
+        );
+        // resetForm();
+        navigate("/password-updated");
+        console.log("Password update api res >>>>>", res);
+      } catch (error) {
+        console.log("password update error >>>>", error);
+      }
     },
   });
   return (

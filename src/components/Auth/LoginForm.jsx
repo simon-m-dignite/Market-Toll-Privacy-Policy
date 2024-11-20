@@ -1,10 +1,16 @@
 import React, { useContext, useState } from "react";
 import { LuEye } from "react-icons/lu";
 import { LuEyeOff } from "react-icons/lu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
 import { AuthContext } from "../../context/authContext";
+import axios from "axios";
+import { BASE_URL } from "../../api/api";
+import GoogleLoginButton from "./GoogleLoginButton";
+import FacebookLoginButton from "./FacebookLoginButton";
+import AppleLoginButton from "./AppleLoginButton";
+import { toast } from "react-toastify";
 
 const validate = (values) => {
   const errors = {};
@@ -17,6 +23,8 @@ const validate = (values) => {
 
   if (!values.password) {
     errors.password = "Required";
+  } else if (values.password.lenght < 8) {
+    errors.password = "Password must be 8 characters";
   }
 
   return errors;
@@ -24,7 +32,10 @@ const validate = (values) => {
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { user, setUser } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -32,11 +43,38 @@ const LoginForm = () => {
       password: "",
     },
     validate,
-    onSubmit: (values, { resetForm }) => {
-      alert(JSON.stringify(values, null, 2));
-      setUser(true);
-      Cookies.set("user", JSON.stringify(values));
-      resetForm();
+    onSubmit: async (values, { resetForm }) => {
+      setLoading(true);
+      try {
+        const response = await axios.post(
+          `${BASE_URL}/users/email-password-login`,
+          values,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.success) {
+          console.log("Login successful:", response.data.data);
+          resetForm();
+          Cookies.set("user", JSON.stringify(response.data.data));
+          toast.success("Login successfull");
+          navigate("/");
+          return response.data;
+        } else {
+          // console.error("Login failed:", response.data.message);
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        // console.error("Error logging in:", error);
+        toast.error(error.response.data.message);
+        setError(error.response.data.message);
+        throw new Error(error.message);
+      } finally {
+        setLoading(false);
+      }
     },
   });
   return (
@@ -59,6 +97,11 @@ const LoginForm = () => {
         <p className="text-base font-medium">
           Where every need finds its perfect match
         </p>
+        {error !== "" && (
+          <p className="text-base font-medium text-center mx-auto text-red-500">
+            {error}
+          </p>
+        )}
 
         <div className="w-full flex flex-col items-start gap-1">
           <label htmlFor="email" className="text-[14px] font-medium">
@@ -142,36 +185,9 @@ const LoginForm = () => {
         <p className="text-center text-xs text-[#8B8B8B] mx-auto mt-2">OR</p>
 
         <div className="w-full flex items-center justify-between">
-          <button
-            type="button"
-            className="bg-white w-[85px] xl:w-[166px] h-[50px] rounded-[20px] flex items-center justify-center"
-          >
-            <img
-              src="/google-icon.png"
-              alt="google icon"
-              className="w-[22px] h-[22px]"
-            />
-          </button>
-          <button
-            type="button"
-            className="bg-white w-[85px] xl:w-[166px] h-[50px] rounded-[20px] flex items-center justify-center"
-          >
-            <img
-              src="/apple-icon.png"
-              alt="google icon"
-              className="w-[18px] h-[22px]"
-            />
-          </button>
-          <button
-            type="button"
-            className="bg-white w-[85px] xl:w-[166px] h-[50px] rounded-[20px] flex items-center justify-center"
-          >
-            <img
-              src="/facebook-icon.png"
-              alt="google icon"
-              className="w-[22px] h-[22px]"
-            />
-          </button>
+          <GoogleLoginButton />
+          <AppleLoginButton />
+          <FacebookLoginButton />
         </div>
 
         <p className="text-sm text-center w-full mt-4">
