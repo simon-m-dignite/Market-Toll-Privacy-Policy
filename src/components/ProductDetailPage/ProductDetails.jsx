@@ -9,6 +9,8 @@ import { FiHeart } from "react-icons/fi";
 import axios from "axios";
 import { BASE_URL } from "../../api/api";
 import { AuthContext } from "../../context/authContext";
+import { toast } from "react-toastify";
+import ProductSeller from "./ProductSeller";
 
 const ProductDetails = () => {
   const [product, setProduct] = useState(null);
@@ -17,14 +19,40 @@ const ProductDetails = () => {
   const [addToCart, setAddToCart] = useState(false);
   const { productId } = useParams();
   const { user } = useContext(AuthContext);
+  const [displayImage, setDisplayImage] = useState(null);
+  const [fulfillmentMethod, setFulfillmentMethod] = useState({
+    selfPickup: null,
+    delivery: null,
+  });
 
-  console.log(productId);
   const handleShowPopup = () => {
     setShowPopup(!showPopup);
   };
 
-  const handleAddToCart = () => {
-    setAddToCart(!addToCart);
+  const handleAddToCart = async (method) => {
+    setFulfillmentMethod(method);
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/users/cart-product/${productId}`,
+        {
+          fulfillmentMethod: method,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      console.log("add to cart res >>>>>>", res);
+      if (res.status == 201) {
+        setAddToCart(true);
+      }
+      handleShowPopup();
+    } catch (error) {
+      console.log("add to cart errr >>>>>", error);
+      toast.error(error?.response?.data?.message);
+      handleShowPopup();
+    }
   };
 
   const handleFetchProduct = async () => {
@@ -45,17 +73,42 @@ const ProductDetails = () => {
     handleFetchProduct();
   }, []);
 
-  // const displayImage = product?.images?.find(
-  //   (image) => image.displayImage === true
-  // );
-  const defaultDisplayImage =
-    product?.images?.find((image) => image.displayImage == true) ||
-    product?.images?.[0]; // Fallback to the first image if no `displayImage` is true
+  useEffect(() => {
+    if (product?.images?.length > 0) {
+      const defaultDisplayImage =
+        product.images.find((image) => image.displayImage === true) ||
+        product.images[0];
+      setDisplayImage(defaultDisplayImage);
+    }
+  }, [product]);
 
-  const [displayImage, setDisplayImage] = useState(defaultDisplayImage);
-  console.log(displayImage);
   const handleThumbnailClick = (image) => {
     setDisplayImage(image);
+  };
+
+  const handleIncrementQuantity = async (type) => {
+    const endpoint =
+      type === "increment"
+        ? `${BASE_URL}/users/cart-product-increment-by-one/${productId}`
+        : `${BASE_URL}/users/cart-product-decrement-by-one/${productId}`;
+    try {
+      const res = await axios.put(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      console.log("increment by one res >>>>>>", res);
+      if (res.status == 200) {
+        setQuantity(res?.data?.data?.quantity);
+      }
+    } catch (error) {
+      console.log("decrement by one err >>>>>>", error);
+      toast.error(error?.response?.data?.message);
+    }
   };
 
   return (
@@ -72,20 +125,24 @@ const ProductDetails = () => {
                 <FiHeart className="text-white text-2xl" />
               </button>
               <img
-                src={displayImage}
+                src={displayImage?.url}
                 alt="product image"
-                className="w-full h-auto lg:h-[376px]"
+                className="w-full h-auto lg:h-[376px] object-cover rounded-xl"
               />
               <div className="w-full grid grid-cols-4 mt-3 gap-3">
-                {product?.images?.map((image, index) => {
-                  return (
-                    <img
-                      src={image?.url}
-                      alt=""
-                      className="rounded-xl h-[97px] w-full object-cover"
-                    />
-                  );
-                })}
+                {product?.images?.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image?.url}
+                    alt={`Thumbnail ${index + 1}`}
+                    className={`rounded-xl h-[97px] w-full object-cover cursor-pointer ${
+                      image?.url === displayImage?.url
+                        ? "border-2 border-blue-500"
+                        : ""
+                    }`}
+                    onClick={() => handleThumbnailClick(image)}
+                  />
+                ))}
               </div>
 
               <div className="mt-16 hidden lg:block">
@@ -139,35 +196,7 @@ const ProductDetails = () => {
 
               <div className="w-full border" />
 
-              <div className="w-full">
-                <p className="blue-text text-sm font-bold mb-3">Seller</p>
-                <div className="flex items-center gap-2">
-                  <img
-                    src="/seller-profile-img.png"
-                    alt="seller profile image"
-                    className="w-[68px] h-[68px]"
-                  />
-                  <div className="flex flex-col items-start">
-                    <span className="text-[#676767] text-[13px] font-normal">
-                      Posted By
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[18px] font-medium">
-                        Adam Mill{" "}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <IoIosStar className="text-yellow-400" /> 4.8
-                      </span>
-                    </div>
-                    <Link
-                      to="/seller-profile/093u409u32409u3"
-                      className="text-[13px] font-semibold underline"
-                    >
-                      View Profile
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              <ProductSeller productData={product} />
 
               <div className="w-full border" />
 
@@ -175,7 +204,7 @@ const ProductDetails = () => {
                 <div className="flex items-center justify-center">
                   <button
                     type="button"
-                    onClick={() => setQuantity(quantity - 1)}
+                    onClick={() => handleIncrementQuantity("decrement")}
                     className="py-3.5 px-6 rounded-l-[20px] text-center blue-bg"
                   >
                     <FaMinus className="text-lg text-white" />
@@ -189,20 +218,29 @@ const ProductDetails = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => handleIncrementQuantity("increment")}
                     className="py-3.5 px-6 rounded-r-[20px] text-center blue-bg"
                   >
                     <FaPlus className="text-lg text-white" />
                   </button>
                 </div>
                 <div>
-                  <button
-                    type="button"
-                    onClick={handleShowPopup}
-                    className="blue-bg text-white font-bold text-sm py-3.5 rounded-[20px] text-center w-full"
-                  >
-                    Add To Cart
-                  </button>
+                  {addToCart ? (
+                    <Link
+                      to="/cart"
+                      className="blue-bg text-white font-bold text-sm py-3.5 rounded-[20px] text-center w-full block"
+                    >
+                      View Cart
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleShowPopup}
+                      className="blue-bg text-white font-bold text-sm py-3.5 rounded-[20px] text-center w-full"
+                    >
+                      {addToCart ? "View Cart" : " Add To Cart"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -215,6 +253,7 @@ const ProductDetails = () => {
       <ChooseDeliveryModal
         showPopup={showPopup}
         handleShowPopup={handleShowPopup}
+        handleSelectFulfillmentMethod={handleAddToCart}
       />
     </div>
   );

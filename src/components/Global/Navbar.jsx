@@ -19,6 +19,8 @@ const Navbar = () => {
     navigate("/login");
     Cookies.remove("market-signup");
     Cookies.remove("user");
+    localStorage.removeItem("user");
+    localStorage.removeItem("market-signup");
     setShowProfileDropdown(!showProfileDropdown);
   };
 

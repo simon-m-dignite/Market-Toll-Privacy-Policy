@@ -83,7 +83,7 @@ const ProductReviewPage = () => {
                     productData.productImages[productData?.coverImageIndex]
                   )}
                   alt="product image"
-                  className="w-full h-auto lg:h-[336px]"
+                  className="w-full h-auto lg:h-[336px] rounded-[20px]"
                 />
               )}
             <div className="w-full grid grid-cols-4 mt-3 gap-3">

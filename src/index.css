@@ -87,3 +87,12 @@ input[type="number"]::-ms-clear {
   border-radius: 15px !important;
   border: 1px solid #dedede;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

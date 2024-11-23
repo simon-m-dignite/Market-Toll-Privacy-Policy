@@ -12,7 +12,7 @@ const SubscriptionsPage = () => {
     <div className="padding-x py-6 w-full">
       <div className="rounded-2xl p-5 bg-[#F7F7F7]">
         <div className="w-full p-6 bg-white rounded-2xl">
-          <Link to="/" className="flex items-center justify-start gap-1">
+          <Link to="/" className="flex items-center justify-start gap-1 w-20">
             <GoArrowLeft className="light-blue-text text-xl" />
             <span className="text-sm font-medium text-[#5c5c5c]">Back</span>
           </Link>
@@ -124,7 +124,7 @@ const PackageCard = ({
           {planType}
         </span>
         {user?.subscriptionPlan?.name == planType ? (
-          <span className="bg-red-500 px-6 py-2.5 rounded-full text-center text-white font-medium text-sm float-end">
+          <span className="bg-red-500 px-3 py-1.5 rounded-full text-center text-white font-medium text-sm float-end">
             Subscribed
           </span>
         ) : null}

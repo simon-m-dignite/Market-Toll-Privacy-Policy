@@ -55,16 +55,19 @@ const LoginForm = () => {
             },
           }
         );
-
+        console.log("login response >>>>", response);
         if (response.data.success) {
-          console.log("Login successful:", response.data.data);
-          resetForm();
-          Cookies.set("user", JSON.stringify(response.data.data));
+          console.log("Login successful:", response.data);
+          setTimeout(() => {
+            localStorage.setItem("user", JSON.stringify(response.data.data));
+            console.log("Cookie after setting:", Cookies.get("user"));
+            resetForm();
+          }, 500);
           toast.success("Login successfull");
-          navigate("/");
+          // navigate("/");
           return response.data;
         } else {
-          // console.error("Login failed:", response.data.message);
+          console.error("Login failed:", response.data.message);
           throw new Error(response.data.message);
         }
       } catch (error) {
@@ -121,7 +124,7 @@ const LoginForm = () => {
               onBlur={formik.handleBlur}
               value={formik.values.email}
               placeholder="johnsmith@gmail.com"
-              className="w-full bg-transparent text-[14px] font-[400] text-[#5C5C5C] outline-none"
+              className="w-full bg-white text-[14px] font-[400] text-[#5C5C5C] outline-none"
             />
           </div>
           {formik.errors.email ? (

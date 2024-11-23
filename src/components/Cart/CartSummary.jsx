@@ -2,25 +2,45 @@ import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { FaCheck } from "react-icons/fa6";
 
-const CartSummary = ({ onclick, count, isOrderPlaced, setIsOrderPlaced }) => {
+const CartSummary = ({
+  onclick,
+  count,
+  isOrderPlaced,
+  setIsOrderPlaced,
+  cartProducts,
+}) => {
   //   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
   const handlePlaceOrder = () => {
     setIsOrderPlaced(!isOrderPlaced);
   };
+  let totalAmount = cartProducts.reduce((total, cartItem) => {
+    const price = cartItem.product.price;
+    const quantity = cartItem.quantity;
+    return total + price * quantity; // Add price * quantity to the total
+  }, 0);
+
+  console.log("Total Amount: $", totalAmount.toFixed(2));
+
   return (
     <div className="bg-white rounded-[20px] p-6">
       <h3 className="font-bold text-[28px] blue-text">Order Summary</h3>
 
       <div className="w-full mt-4 flex items-center justify-between">
-        <span className="text-base text-[#000000B2]">Subtotal (3 items)</span>
-        <span className="text-base text-[#000000B2]">$848.00</span>
+        <span className="text-base text-[#000000B2]">
+          Subtotal ({cartProducts?.quantity} items)
+        </span>
+        <span className="text-base text-[#000000B2]">
+          ${totalAmount.toFixed(2)}
+        </span>
       </div>
 
       <div className="border w-full my-4" />
 
       <div className="w-full flex items-center justify-between">
         <span className="text-base font-extrabold">Total</span>
-        <span className="text-base font-extrabold">$848.00</span>
+        <span className="text-base font-extrabold">
+          ${totalAmount.toFixed(2)}
+        </span>
       </div>
 
       <button

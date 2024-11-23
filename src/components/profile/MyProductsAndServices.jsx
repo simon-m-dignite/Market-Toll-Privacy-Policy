@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "../Global/ProductCard";
 import { IoClose } from "react-icons/io5";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { FiPlus } from "react-icons/fi";
+import { AuthContext } from "../../context/authContext";
+import MyServicesList from "./MyServicesList";
+import MyProductsList from "./MyProductsList";
 // import { Popup } from "../OnboardProfileSetup/WouldAddService";
 
 const MyProductsAndServices = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [myProducts, setMyProducts] = useState([]);
+  const [state, setState] = useState(false);
+  // console.log(user?._id);
 
   const handleShowPopup = () => {
     setShowPopup(!showPopup);
@@ -35,13 +42,19 @@ const MyProductsAndServices = () => {
         <div>
           <button
             type="button"
-            className="blue-bg text-white rounded-l-xl px-4 py-2.5 font-bold"
+            onClick={() => setState(false)}
+            className={`${
+              state ? "bg-[#F7F7F7] text-black" : "blue-bg text-white"
+            } rounded-l-xl px-4 py-2.5 font-bold`}
           >
             Products
           </button>
           <button
             type="button"
-            className="bg-[#F7F7F7] text-black rounded-r-xl px-4 py-2.5 font-bold"
+            onClick={() => setState(true)}
+            className={`${
+              !state ? "bg-[#F7F7F7] text-black" : "blue-bg text-white"
+            } rounded-r-xl px-4 py-2.5 font-bold`}
           >
             Services
           </button>
@@ -58,16 +71,7 @@ const MyProductsAndServices = () => {
           </select>
         </div>
       </div>
-      <div className="mt-6 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-      </div>
+      {state ? <MyServicesList /> : <MyProductsList />}
     </div>
   );
 };

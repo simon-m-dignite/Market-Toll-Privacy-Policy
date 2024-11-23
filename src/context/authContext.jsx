@@ -8,8 +8,9 @@ const AuthContextProvider = ({ children }) => {
     email: false,
     phone: false,
   });
-  const userCookie = Cookies.get("user");
+  const userCookie = localStorage.getItem("user");
   const user = userCookie ? JSON.parse(userCookie) : null;
+  // console.log("user >>>", user);
 
   return (
     <AuthContext.Provider

@@ -5,31 +5,39 @@ import ServiceCard from "../Global/ServiceCard";
 import axios from "axios";
 import { BASE_URL } from "../../api/api";
 import { AuthContext } from "../../context/authContext";
+import Loader from "../Global/Loader";
 
 const ProductList = () => {
   const [showServices, setShowServices] = useState(false);
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [services, setServices] = useState([]);
   const { user } = useContext(AuthContext);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/users/products?page=1`, {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/users/home-screen-products`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
       });
-      console.log("home screen products >>", res?.data);
       setProducts(res?.data?.data);
+      setFilteredProducts(res?.data?.data);
+      console.log("home products >>>>>", res?.data?.data);
     } catch (error) {
       console.log("home screen products err >>>>", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchServices = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(
         `${BASE_URL}/users/home-screen-services?page=${page}`,
         {
@@ -38,10 +46,12 @@ const ProductList = () => {
           },
         }
       );
-      console.log("services >>>>>", res?.data?.data);
+      // console.log("services >>>>>", res?.data?.data);
       setServices(res?.data?.data);
     } catch (error) {
       console.log("services error >>>>", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,43 +72,64 @@ const ProductList = () => {
     navigate("/categories/consoles", { state: { from: "/" } });
   };
 
+  const filterProducts = (categoryName) => {
+    if (categoryName === "All") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(
+        (prod) => prod.category === categoryName
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <div className="w-full">
+    <div className="w-full min-h-[70vh]">
       <div className="w-full flex items-center justify-between mt-6">
         {!showServices && (
           <div className="flex items-center gap-2 category-buttons flex-wrap">
             <button
               type="button"
+              onClick={() => filterProducts("All")}
               className="blue-bg text-white text-[13px] font-medium rounded-lg px-3 py-2"
             >
               All
             </button>
             <button
               type="button"
+              onClick={() => filterProducts("Electronics")}
               className="bg-[#F7F7F7] text-black text-[13px] font-medium rounded-lg px-3 py-2"
             >
-              Electronic
+              Electronics
             </button>
             <button
               type="button"
+              onClick={() => filterProducts("Home Appliances")}
               className="bg-[#F7F7F7] text-black text-[13px] font-medium rounded-lg px-3 py-2"
             >
               Home Appliances
             </button>
             <button
               type="button"
+              onClick={() => filterProducts("Home & Furniture")}
               className="bg-[#F7F7F7] text-black text-[13px] font-medium rounded-lg px-3 py-2"
             >
               Home Decor & Interiors
             </button>
             <button
               type="button"
+              onClick={() => filterProducts("Phone & Tablet")}
               className="bg-[#F7F7F7] text-black text-[13px] font-medium rounded-lg px-3 py-2"
             >
               Phone & Tablet
             </button>
             <button
               type="button"
+              onClick={() => filterProducts("Fashion")}
               className="bg-[#F7F7F7] text-black text-[13px] font-medium rounded-lg px-3 py-2"
             >
               Clothing
@@ -142,41 +173,61 @@ const ProductList = () => {
             </h3>
           </div>
 
-          <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services && services?.length > 0 ? (
-              <>
-                {services?.map((service, index) => {
-                  return <ServiceCard service={service} key={index} />;
-                })}
-              </>
-            ) : null}
-          </div>
+          {loading ? (
+            <Loader />
+          ) : (
+            <>
+              <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {services && services?.length > 0 ? (
+                  <>
+                    {services?.map((service, index) => {
+                      return <ServiceCard service={service} key={index} />;
+                    })}
+                  </>
+                ) : null}
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>
-          <div className="w-full flex items-center justify-between mt-10">
-            <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
-              Console
-            </h3>
-            <Link
-              to="/categories/consoles"
-              className="text-[#6C6C6C] text-[18px] font-medium"
-            >
-              See all
-            </Link>
-          </div>
+          {Array.isArray(products) && filteredProducts.length > 0 ? (
+            <>
+              {filteredProducts?.map((productList, index) => {
+                return (
+                  <div key={index} className="mt-10">
+                    <div className="w-full flex items-center justify-between">
+                      <h3 className="text-2xl lg:text-[28px] font-bold blue-text">
+                        {productList?.category}
+                      </h3>
+                      <Link
+                        to={`/categories/${productList?.category}`}
+                        className="text-[#6C6C6C] text-[18px] font-medium"
+                      >
+                        See all
+                      </Link>
+                    </div>
 
-          <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products && products.length > 0 ? (
-              <>
-                {products.map((product, index) => {
-                  return <ProductCard product={product} key={index} />;
-                })}
-              </>
-            ) : (
-              <></>
-            )}
-          </div>
+                    <div className="w-full mt-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {productList?.products?.length > 0 ? (
+                        productList?.products
+                          ?.slice(0, 4)
+                          ?.map((product, i) => (
+                            <ProductCard product={product} key={i} />
+                          ))
+                      ) : (
+                        <p>No products available in this category.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <p className="mt-5 text-sm blue-text">
+              No products available in this category.
+            </p>
+          )}
         </>
       )}
     </div>

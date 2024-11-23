@@ -3,11 +3,25 @@ import { GiCardPickup } from "react-icons/gi";
 import { IoClose } from "react-icons/io5";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
-const ChooseDeliveryModal = ({ showPopup, handleShowPopup }) => {
+const ChooseDeliveryModal = ({
+  showPopup,
+  handleShowPopup,
+  fulfillmentMethod,
+  setFulfillmentMethod,
+  handleSelectFulfillmentMethod,
+}) => {
+  const handlePickupClick = () => {
+    handleSelectFulfillmentMethod({ selfPickup: true, delivery: false });
+  };
+
+  const handleDeliveryClick = () => {
+    handleSelectFulfillmentMethod({ selfPickup: false, delivery: true });
+  };
+
   return (
     showPopup && (
       <div className="w-full h-screen z-50 fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center">
-        <div className="w-[440px] h-[225px] bg-white rounded-[15px] p-8 relative flex flex-col items-center justify-center gap-3">
+        <div className="w-[440px] h-[225px] bg-white rounded-[15px] p-8 relative flex flex-col items-start justify-center gap-3">
           <button
             type="button"
             onClick={handleShowPopup}
@@ -16,8 +30,11 @@ const ChooseDeliveryModal = ({ showPopup, handleShowPopup }) => {
             <IoClose className="w-full h-full" />
           </button>
 
+          <h2 className="text-lg font-bold blue-text">Select type</h2>
+
           <button
             type="button"
+            onClick={handlePickupClick}
             className="w-full bg-[#F2F2F2] p-3 rounded-xl flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
@@ -28,8 +45,10 @@ const ChooseDeliveryModal = ({ showPopup, handleShowPopup }) => {
             </div>
             <MdOutlineKeyboardArrowRight className="text-xl" />
           </button>
+
           <button
             type="button"
+            onClick={handleDeliveryClick}
             className="w-full bg-[#F2F2F2] p-3 rounded-xl flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
